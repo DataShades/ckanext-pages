@@ -19,6 +19,9 @@
   {% set editor = h.get_wysiwyg_editor() %}
 
     {% for page in pages %}
+      {% if page.display_link_on and page.order != '' %}
+        {% set display_link_on = {'header_and_footer': 'both menus', 'header': 'header menu', 'footer': 'footer menu'} %}
+      {% endif %}
       {% if id %} {# this is for orgs and groups #}
         {% set url = h.url_for(controller='ckanext.pages.controller:PagesController', action=action, id=id, page='/' + page.name) %}
       {% elif type == 'blog' %}
@@ -34,9 +37,14 @@
         </div>
         <div class="span8">
            <h3 class="dataset-heading">
-              <a href="{{ url }}" >{{ page.title }}</a>
+              <a href="{{ url }}" >{{ page.title }} {% if page.private %}{{ '(Private)' }}{% endif %}</a>
               {% if page.publish_date %}
-                 <small class="date"> {{ h.render_datetime(page.publish_date) }} </small>
+                 <small class="date"> {{ h.render_datetime(page.publish_date) }} </small><br>
+              {% endif %}
+              {% if page.display_link_on and page.order != '' %}
+                  <small class="date"> {{ 'Link on ' + display_link_on[page.display_link_on] }} </small>
+              {% else %}
+                  <small class="date"> {{ 'No link for this page' }} </small>
               {% endif %}
             </h3>
             {% if page.content %}
@@ -54,9 +62,14 @@
       {% else %}
         <div class="span11">
           <h3 class="dataset-heading">
-            <a href="{{ url }}" >{{ page.title }}</a>
+            <a href="{{ url }}" >{{ page.title }} {% if page.private %}{{ '(Private)' }}{% endif %}</a>
             {% if page.publish_date %}
-               <small class="date"> {{ h.render_datetime(page.publish_date) }} </small>
+               <small class="date"> {{ h.render_datetime(page.publish_date) }} </small><br>
+            {% endif %}
+            {% if page.display_link_on and page.order != '' %}
+                <small class="date"> {{ 'Link on ' + display_link_on[page.display_link_on] }} </small>
+            {% else %}
+                <small class="date"> {{ 'No link for this page' }} </small>
             {% endif %}
           </h3>
           {% if page.content %}

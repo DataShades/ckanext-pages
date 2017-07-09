@@ -10,12 +10,14 @@
   {% set slug_prefix = cancel_url ~ '/' %}
   {% set slug_domain = h.url_for('organization_pages_index', id=id, qualified=true) %}
   {% set hide_field_order = true %}
+  {% set hide_external_link = true %}
 {% elif type == 'group' %}
   {% set action_url = h.url_for('group_pages_edit', id=id, page='/' + page) %}
   {% set cancel_url = h.url_for('group_pages_index', id=id) %}
   {% set slug_prefix = cancel_url ~ '/' %}
   {% set slug_domain = h.url_for('group_pages_index', id=id, qualified=true) %}
   {% set hide_field_order = true %}
+  {% set hide_external_link = true %}
 {% elif type == 'blog' %}
   {% set action_url = h.url_for('blog_edit', page='/' + page) %}
   {% set cancel_url = h.url_for('blog_index') %}
@@ -80,6 +82,19 @@
     </div>
   </div>
 
+  {% if not hide_external_link %}
+  <div class="control-group">
+    <label for="field-external-link" class="control-label">{{ _('External link') }}</label>
+    <div class="controls">
+      <select id="field-external-link" class="form-control" name="external_link">
+        {% for option in [(false, _('No')), (true, _('Yes'))] %}
+        <option value="{{ option[0] }}" {% if option[0] == data.external_link %}selected="selected"{% endif %}>{{ option[1] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  {% endif %}
+
   {% if not hide_field_order %}
     <div class="control-group">
       <label for="field-order" class="control-label">{{ _('Menu Order') }}</label>
@@ -87,6 +102,17 @@
         <select id="field-order" class="form-control" name="order">
             {% for option in [('', _('Not in Menu')), ('1','1'), ('2', '2'), ('3', '3') , ('4', '4')] %}
           <option value="{{ option[0] }}" {% if option[0] == data.order %}selected="selected"{% endif %}>{{ option[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label for="field-display_link_on" class="control-label">{{ _('Display link on') }}</label>
+      <div class="controls">
+        <select id="field-display_link_on" class="form-control" name="display_link_on">
+          {% for option in [('header_and_footer', _('Header and Footer')), ('header', _('Header')), ('footer', _('Footer'))] %}
+          <option value="{{ option[0] }}" {% if option[0] == data.display_link_on %}selected="selected"{% endif %}>{{ option[1] }}</option>
           {% endfor %}
         </select>
       </div>

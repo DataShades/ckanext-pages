@@ -69,6 +69,29 @@ ckanext.pages.editor = ckeditor
 ```
 This enables either the [medium](https://jakiestfu.github.io/Medium.js/docs/) or [ckeditor](http://ckeditor.com/)
 
+## Footer menu items
+
+There is a new ability to add new menu links into the footer menu.
+At the creating form, there is a select `Display link on`, which responsible for the display of the menu items in a specific place.
+But to make those items display in the footer, a `build_pages_footer_nav` method should be provided in `footer.html`, for example by overriding the template:
+```
+{% ckan_extends %}
+{% block footer_links %}
+  {{ h.build_pages_footer_nav(
+    ('search', _('Datasets')),
+    ('organizations_index', _('Organizations')),
+    ('group_index', _('Groups')),
+    ('about', _('About'))
+  ) }}
+{% endblock %}
+{% block footer_links_ckan %}{% endblock %}
+```
+It reacts to the same params that used for the removing elements in described in Configuration section, but still you can remove the arguments from this method, so only the items from created pages will be shown in the footer menu.
+
+## External links
+You can create a page that is used like an external link in menu item. To do this, switch the `External link` select to `Yes` and paste a `link(https://ckan.org/)` to the external site at the `Content` section on create/edit forms.
+The external links open new tabs, when user clicks on them.
+
 ## Dependencies
 
 * lxml
