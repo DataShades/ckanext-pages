@@ -30,6 +30,18 @@ def page_name_validator(key, data, errors, context):
             p.toolkit._('Page name already exists in database'))
 
 
+def publish_not_empty(key, data, errors, context):
+    value = data.get(key)
+    try:
+        datetime.datetime.strptime(
+            value,
+            "%Y-%m-%d").strftime('%Y-%m-%d')
+    except Exception as e:
+        print type(e), e
+    if value is df.missing or not value:
+        errors[key].append('Publish Date Must be supplied')
+
+
 def not_empty_if_blog(key, data, errors, context):
     value = data.get(key)
     if data.get(('page_type',), '') == 'blog':
@@ -66,8 +78,7 @@ schema = {
     'user_id': [p.toolkit.get_validator('ignore_missing'), unicode],
     'created': [p.toolkit.get_validator('ignore_missing'),
                 p.toolkit.get_validator('isodate')],
-    'publish_date': [not_empty_if_blog,
-                     p.toolkit.get_validator('ignore_missing'),
+    'publish_date': [publish_not_empty,
                      p.toolkit.get_validator('isodate')],
 }
 
@@ -80,6 +91,10 @@ def _pages_show(context, data_dict):
     out = db.Page.get(group_id=org_id, name=page)
     if out:
         out = db.table_dictize(out, context)
+        if 'publish_date' in out and out['publish_date'] != '':
+            out['publish_date'] = datetime.datetime.strptime(
+                out['publish_date'],
+                "%Y-%m-%dT%H:%M:%S").strftime('%Y-%m-%d')
     return out
 
 
@@ -190,6 +205,7 @@ def _pages_update(context, data_dict):
     session = context['session']
     session.add(out)
     session.commit()
+
 
 def pages_upload(context, data_dict):
 

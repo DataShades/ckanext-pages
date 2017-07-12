@@ -216,7 +216,7 @@ class PagesPlugin(PagesPluginBase):
         controller = 'ckanext.pages.controller:PagesController'
 
         if self.organization_pages:
-            map.connect('organization_pages_delete', '/organization/pages_delete/{id}{page:/.*|}',
+            map.connect('organization_pages_delete', '/organization/pages_delete/{id}/{page}',
                         action='org_delete', ckan_icon='delete', controller=controller)
             map.connect('organization_pages_edit', '/organization/pages_edit/{id}{page:/.*|}',
                         action='org_edit', ckan_icon='edit', controller=controller)
@@ -226,7 +226,7 @@ class PagesPlugin(PagesPluginBase):
                         action='org_show', ckan_icon='file', controller=controller, highlight_actions='org_edit org_show')
 
         if self.group_pages:
-            map.connect('group_pages_delete', '/group/pages_delete/{id}{page:/.*|}',
+            map.connect('group_pages_delete', '/group/pages_delete/{id}/{page}',
                         action='group_delete', ckan_icon='delete', controller=controller)
             map.connect('group_pages_edit', '/group/pages_edit/{id}{page:/.*|}',
                         action='group_edit', ckan_icon='edit', controller=controller)

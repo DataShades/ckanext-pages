@@ -60,7 +60,11 @@
             {% endif %}
         </div>
       {% else %}
-        <div class="span11">
+        {% if page.group_id %}
+          <div class="span8">
+        {% else %}
+          <div class="span11">
+        {% endif %}
           <h3 class="dataset-heading">
             <a href="{{ url }}" >{{ page.title }} {% if page.private %}{{ '(Private)' }}{% endif %}</a>
             {% if page.publish_date %}

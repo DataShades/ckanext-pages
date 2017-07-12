@@ -4,6 +4,7 @@ from pylons import config
 
 _ = p.toolkit._
 
+
 class PagesController(p.toolkit.BaseController):
     controller = 'ckanext.pages.controller:PagesController'
 
@@ -17,7 +18,8 @@ class PagesController(p.toolkit.BaseController):
         # we need the org for the rest of the page
         context = {'for_view': True}
         try:
-            p.toolkit.c.group_dict = p.toolkit.get_action('organization_show')(context, {'id': id})
+            p.toolkit.c.group_dict = p.toolkit.get_action('organization_show')(
+                context, {'id': id})
         except p.toolkit.ObjectNotFound:
             p.toolkit.abort(404, _('Organization not found'))
         except p.toolkit.NotAuthorized:
@@ -31,7 +33,7 @@ class PagesController(p.toolkit.BaseController):
             return self._org_list_pages(id)
         _page = p.toolkit.get_action('ckanext_pages_show')(
             data_dict={'org_id': p.toolkit.c.group_dict['id'],
-                       'page': page,}
+                       'page': page}
         )
         if _page is None:
             return self._org_list_pages(id)
@@ -44,21 +46,22 @@ class PagesController(p.toolkit.BaseController):
         )
         return p.toolkit.render('ckanext_pages/organization_page_list.html')
 
-
     def org_delete(self, id, page):
         self._template_setup_org(id)
-        page = page[1:]
         if 'cancel' in p.toolkit.request.params:
-            p.toolkit.redirect_to(controller=self.controller, action='org_edit', id=p.toolkit.c.group_dict['name'], page='/' + page)
+            p.toolkit.redirect_to(
+                controller=self.controller,
+                action='org_edit',
+                id=p.toolkit.c.group_dict['name'], page='/' + page)
 
-  ##      try:
-  ##          self._check_access('group_delete', {}, {'id': id})
-  ##      except p.toolkit.NotAuthorized:
-  ##          p.toolkit.abort(401, _('Unauthorized to delete page'))
-
+      ##      try:
+      ##          self._check_access('group_delete', {}, {'id': id})
+      ##      except p.toolkit.NotAuthorized:
+      ##          p.toolkit.abort(401, _('Unauthorized to delete page'))
         try:
             if p.toolkit.request.method == 'POST':
-                p.toolkit.get_action('ckanext_pages_delete')({}, {'org_id': p.toolkit.c.group_dict['id'], 'page': page})
+                p.toolkit.get_action('ckanext_org_pages_delete')({}, {
+                    'org_id': p.toolkit.c.group_dict['id'], 'page': page})
                 p.toolkit.redirect_to('organization_pages_index', id=id)
             else:
                 p.toolkit.abort(404, _('Page Not Found'))
@@ -66,8 +69,8 @@ class PagesController(p.toolkit.BaseController):
             p.toolkit.abort(401, _('Unauthorized to delete page'))
         except p.toolkit.ObjectNotFound:
             p.toolkit.abort(404, _('Group not found'))
-        return p.toolkit.render('ckanext_pages/confirm_delete.html', {'page': page})
-
+        return p.toolkit.render('ckanext_pages/confirm_delete.html', {
+            'page': page})
 
     def org_edit(self, id, page=None, data=None, errors=None, error_summary=None):
         self._template_setup_org(id)
@@ -75,14 +78,14 @@ class PagesController(p.toolkit.BaseController):
             page = page[1:]
         _page = p.toolkit.get_action('ckanext_pages_show')(
             data_dict={'org_id': p.toolkit.c.group_dict['id'],
-                       'page': page,}
+                       'page': page}
         )
         if _page is None:
             _page = {}
 
         if p.toolkit.request.method == 'POST' and not data:
             data = p.toolkit.request.POST
-            items = ['title', 'name', 'content', 'private']
+            items = ['title', 'name', 'content', 'private', 'publish_date']
             # update config from form
             for item in items:
                 if item in data:
@@ -96,21 +99,24 @@ class PagesController(p.toolkit.BaseController):
             except p.toolkit.ValidationError, e:
                 errors = e.error_dict
                 error_summary = e.error_summary
-                return self.org_edit(id, '/' + page, data,
-                                 errors, error_summary)
-            p.toolkit.redirect_to(p.toolkit.url_for('organization_pages', id=id, page='/' + _page['name']))
+                return self.org_edit(
+                    id, '/' + page, data,
+                    errors, error_summary)
+            p.toolkit.redirect_to(p.toolkit.url_for(
+                'organization_pages',
+                id=id, page='/' + _page['name']))
 
         if not data:
             data = _page
-
         errors = errors or {}
         error_summary = error_summary or {}
 
         vars = {'data': data, 'errors': errors,
                 'error_summary': error_summary, 'page': page}
 
-        return p.toolkit.render('ckanext_pages/organization_page_edit.html',
-                               extra_vars=vars)
+        return p.toolkit.render(
+            'ckanext_pages/organization_page_edit.html',
+            extra_vars=vars)
 
     def _template_setup_group(self, id):
         if not id:
@@ -118,12 +124,12 @@ class PagesController(p.toolkit.BaseController):
         # we need the org for the rest of the page
         context = {'for_view': True}
         try:
-            p.toolkit.c.group_dict = p.toolkit.get_action('group_show')(context, {'id': id})
+            p.toolkit.c.group_dict = p.toolkit.get_action('group_show')(
+                context, {'id': id})
         except p.toolkit.ObjectNotFound:
             p.toolkit.abort(404, _('Group not found'))
         except p.toolkit.NotAuthorized:
             p.toolkit.abort(401, _('Unauthorized to read group %s') % id)
-
 
     def group_show(self, id, page=None):
         if page:
@@ -133,7 +139,7 @@ class PagesController(p.toolkit.BaseController):
             return self._group_list_pages(id)
         _page = p.toolkit.get_action('ckanext_pages_show')(
             data_dict={'org_id': p.toolkit.c.group_dict['id'],
-                       'page': page,}
+                       'page': page}
         )
         if _page is None:
             return self._group_list_pages(id)
@@ -152,14 +158,14 @@ class PagesController(p.toolkit.BaseController):
             page = page[1:]
         _page = p.toolkit.get_action('ckanext_pages_show')(
             data_dict={'org_id': p.toolkit.c.group_dict['id'],
-                       'page': page,}
+                       'page': page}
         )
         if _page is None:
             _page = {}
 
         if p.toolkit.request.method == 'POST' and not data:
             data = p.toolkit.request.POST
-            items = ['title', 'name', 'content', 'private']
+            items = ['title', 'name', 'content', 'private', 'publish_date']
             # update config from form
             for item in items:
                 if item in data:
@@ -173,9 +179,12 @@ class PagesController(p.toolkit.BaseController):
             except p.toolkit.ValidationError, e:
                 errors = e.error_dict
                 error_summary = e.error_summary
-                return self.group_edit(id, '/' + page, data,
-                                 errors, error_summary)
-            p.toolkit.redirect_to(p.toolkit.url_for('group_pages', id=id, page='/' + _page['name']))
+                return self.group_edit(
+                    id, '/' + page, data,
+                    errors, error_summary)
+            p.toolkit.redirect_to(p.toolkit.url_for(
+                'group_pages', id=id,
+                page='/' + _page['name']))
 
         if not data:
             data = _page
@@ -186,8 +195,35 @@ class PagesController(p.toolkit.BaseController):
         vars = {'data': data, 'errors': errors,
                 'error_summary': error_summary, 'page': page}
 
-        return p.toolkit.render('ckanext_pages/group_page_edit.html',
-                               extra_vars=vars)
+        return p.toolkit.render(
+            'ckanext_pages/group_page_edit.html',
+            extra_vars=vars)
+
+    def group_delete(self, id, page):
+        self._template_setup_group(id)
+        if 'cancel' in p.toolkit.request.params:
+            p.toolkit.redirect_to(
+                controller=self.controller,
+                action='group_edit',
+                id=p.toolkit.c.group_dict['name'], page='/' + page)
+
+          ##      try:
+          ##          self._check_access('group_delete', {}, {'id': id})
+          ##      except p.toolkit.NotAuthorized:
+          ##          p.toolkit.abort(401, _('Unauthorized to delete page'))
+        try:
+            if p.toolkit.request.method == 'POST':
+                p.toolkit.get_action('ckanext_group_pages_delete')({}, {
+                    'org_id': p.toolkit.c.group_dict['id'], 'page': page})
+                p.toolkit.redirect_to('group_pages_index', id=id)
+            else:
+                p.toolkit.abort(404, _('Page Not Found'))
+        except p.toolkit.NotAuthorized:
+            p.toolkit.abort(401, _('Unauthorized to delete page'))
+        except p.toolkit.ObjectNotFound:
+            p.toolkit.abort(404, _('Group not found'))
+        return p.toolkit.render('ckanext_pages/confirm_delete.html', {
+            'page': page})
 
     def blog_index(self):
         return self._pages_list_pages('blog')
@@ -231,20 +267,31 @@ class PagesController(p.toolkit.BaseController):
                 style = "width: %s; height: %s; float: %s; overflow: auto; vertical-align:middle; position:relative" % (width, height, align)
                 element.attrib['style'] = style
                 element.attrib['class'] = 'pages-embed'
-                view = p.toolkit.get_action('resource_view_show')({}, {'id': iframe_src[-36:]})
+                view = p.toolkit.get_action('resource_view_show')({}, {
+                    'id': iframe_src[-36:]})
                 context = {}
-                resource = p.toolkit.get_action('resource_show')(context, {'id': view['resource_id']})
+                resource = p.toolkit.get_action('resource_show')(context, {
+                    'id': view['resource_id']})
                 package_id = context['resource'].resource_group.package_id
-                package = p.toolkit.get_action('package_show')(context, {'id': package_id})
+                package = p.toolkit.get_action('package_show')(context, {
+                    'id': package_id})
             except p.toolkit.ObjectNotFound:
-                error = _('ERROR: View not found {view_id}'.format(view_id=iframe_src ))
+                error = _('ERROR: View not found {view_id}'.format(
+                    view_id=iframe_src))
 
             if error:
                 resource_view_html = '<h4> %s </h4>' % error
             elif not helpers.resource_view_is_iframed(view):
-                resource_view_html = helpers.rendered_resource_view(view, resource, package)
+                resource_view_html = helpers.rendered_resource_view(
+                    view, resource, package)
             else:
-                src = helpers.url_for(qualified=True, controller='package', action='resource_view', id=package['name'], resource_id=resource['id'], view_id=view['id'])
+                src = helpers.url_for(
+                    qualified=True,
+                    controller='package',
+                    action='resource_view',
+                    id=package['name'],
+                    resource_id=resource['id'],
+                    view_id=view['id'])
                 message = _('Your browser does not support iframes.')
                 resource_view_html = '<iframe src="{src}" frameborder="0" width="100%" height="100%" style="display:block"> <p>{message}</p> </iframe>'.format(src=src, message=message)
 
@@ -252,8 +299,6 @@ class PagesController(p.toolkit.BaseController):
             element.append(view_element)
 
         _page['content'] = lxml.html.tostring(root)
-
-
 
     def pages_show(self, page=None, page_type='page'):
         p.toolkit.c.page_type = page_type
@@ -276,7 +321,7 @@ class PagesController(p.toolkit.BaseController):
         return self._pages_list_pages('page')
 
     def _pages_list_pages(self, page_type):
-        data_dict={'org_id': None, 'page_type': page_type}
+        data_dict = {'org_id': None, 'page_type': page_type}
         if page_type == 'blog':
             data_dict['order_publish_date'] = True
         p.toolkit.c.pages_dict = p.toolkit.get_action('ckanext_pages_list')(
@@ -299,11 +344,14 @@ class PagesController(p.toolkit.BaseController):
     def pages_delete(self, page, page_type='pages'):
         page = page[1:]
         if 'cancel' in p.toolkit.request.params:
-            p.toolkit.redirect_to(controller=self.controller, action='%s_edit' % page_type, page='/' + page)
+            p.toolkit.redirect_to(
+                controller=self.controller,
+                action='%s_edit' % page_type, page='/' + page)
 
         try:
             if p.toolkit.request.method == 'POST':
-                p.toolkit.get_action('ckanext_pages_delete')({}, {'page': page})
+                p.toolkit.get_action('ckanext_pages_delete')({}, {
+                    'page': page})
                 p.toolkit.redirect_to('%s_index' % page_type)
             else:
                 p.toolkit.abort(404, _('Page Not Found'))
@@ -311,18 +359,20 @@ class PagesController(p.toolkit.BaseController):
             p.toolkit.abort(401, _('Unauthorized to delete page'))
         except p.toolkit.ObjectNotFound:
             p.toolkit.abort(404, _('Group not found'))
-        return p.toolkit.render('ckanext_pages/confirm_delete.html', {'page': page})
-
+        return p.toolkit.render('ckanext_pages/confirm_delete.html', {
+            'page': page})
 
     def blog_edit(self, page=None, data=None, errors=None, error_summary=None):
-        return self.pages_edit(page=page, data=data, errors=errors, error_summary=error_summary, page_type='blog')
+        return self.pages_edit(page=page, data=data, errors=errors,
+                               error_summary=error_summary, page_type='blog')
 
-    def pages_edit(self, page=None, data=None, errors=None, error_summary=None, page_type='pages'):
+    def pages_edit(self, page=None, data=None, errors=None,
+                   error_summary=None, page_type='pages'):
         if page:
             page = page[1:]
         _page = p.toolkit.get_action('ckanext_pages_show')(
             data_dict={'org_id': None,
-                       'page': page,}
+                       'page': page}
         )
         if _page is None:
             _page = {}
@@ -344,12 +394,14 @@ class PagesController(p.toolkit.BaseController):
                 errors = e.error_dict
                 error_summary = e.error_summary
                 return self.pages_edit('/' + page, data,
-                                       errors, error_summary, page_type=page_type)
+                                       errors, error_summary,
+                                       page_type=page_type)
             p.toolkit.redirect_to(p.toolkit.url_for('%s_show' % page_type,
                                                     page='/' + _page['name']))
 
         try:
-            p.toolkit.check_access('ckanext_pages_update', {'user': p.toolkit.c.user or p.toolkit.c.author})
+            p.toolkit.check_access('ckanext_pages_update', {
+                'user': p.toolkit.c.user or p.toolkit.c.author})
         except p.toolkit.NotAuthorized:
             p.toolkit.abort(401, _('Unauthorized to create or edit a page'))
 
@@ -359,7 +411,9 @@ class PagesController(p.toolkit.BaseController):
         errors = errors or {}
         error_summary = error_summary or {}
 
-        form_snippet = config.get('ckanext.pages.form', 'ckanext_pages/base_form.html')
+        form_snippet = config.get(
+            'ckanext.pages.form',
+            'ckanext_pages/base_form.html')
 
         vars = {'data': data, 'errors': errors,
                 'error_summary': error_summary, 'page': page,
@@ -373,10 +427,12 @@ class PagesController(p.toolkit.BaseController):
             p.toolkit.abort(409, _('Only Posting is availiable'))
 
         try:
-            url = p.toolkit.get_action('ckanext_pages_upload')(None, dict(p.toolkit.request.POST))
+            url = p.toolkit.get_action('ckanext_pages_upload')(
+                None, dict(p.toolkit.request.POST))
         except p.toolkit.NotAuthorized:
             p.toolkit.abort(401, _('Unauthorized to upload file %s') % id)
 
         return """<script type='text/javascript'>
                       window.parent.CKEDITOR.tools.callFunction(%s, '%s');
-                  </script>""" % (p.toolkit.request.GET['CKEditorFuncNum'], url['url'])
+                  </script>""" % (p.toolkit.request.GET['CKEditorFuncNum'],
+                                  url['url'])
