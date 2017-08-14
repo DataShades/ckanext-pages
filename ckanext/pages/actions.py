@@ -104,6 +104,7 @@ def _pages_list(context, data_dict):
         db.init_db(context['model'])
     org_id = data_dict.get('org_id')
     ordered = data_dict.get('order')
+    show_all = data_dict.get('show_all_pages')
     order_publish_date = data_dict.get('order_publish_date')
     page_type = data_dict.get('page_type')
     private = data_dict.get('private', True)
@@ -114,13 +115,14 @@ def _pages_list(context, data_dict):
     if order_publish_date:
         search['order_publish_date'] = True
     if not org_id:
-        search['group_id'] = None
-        try:
-            p.toolkit.check_access('ckanext_pages_update', context, data_dict)
-            if not private:
+        if not show_all:
+            search['group_id'] = None
+            try:
+                p.toolkit.check_access('ckanext_pages_update', context, data_dict)
+                if not private:
+                    search['private'] = False
+            except p.toolkit.NotAuthorized:
                 search['private'] = False
-        except p.toolkit.NotAuthorized:
-            search['private'] = False
     else:
         group = context['model'].Group.get(org_id)
         user = context['user']
@@ -172,6 +174,7 @@ def _pages_update(context, data_dict):
     if db.pages_table is None:
         db.init_db(context['model'])
     org_id = data_dict.get('org_id')
+    group_type = data_dict.get('group_type')
     page = data_dict.get('page')
     # we need the page in the context for name validation
     context['page'] = page
@@ -197,6 +200,8 @@ def _pages_update(context, data_dict):
     for key in extra_keys:
         if key in data:
             extras[key] = data.get(key)
+    if group_type:
+        extras['group_type'] = group_type
     out.extras = json.dumps(extras)
 
     out.modified = datetime.datetime.utcnow()

@@ -39,7 +39,8 @@ def build_pages_footer_nav(*args):
     output = h.build_nav_main(*new_args)
     pages_list = p.toolkit.get_action('ckanext_pages_list')(None, {
         'order': True,
-        'private': False})
+        'private': False,
+        'show_all_pages': True})
 
     page_name = ''
     if (p.toolkit.c.action in ('pages_show', 'blog_show')
@@ -52,6 +53,13 @@ def build_pages_footer_nav(*args):
                 if page['page_type'] == 'blog':
                     link = h.literal('<a href="/blog/%s">%s</a>' % (
                         str(page['name']), str(page['title'])))
+                elif page['group_id']:
+                    org_or_group = page['group_type']
+                    link = h.literal('<a href="/%s/pages/%s/%s">%s</a>' % (
+                        org_or_group,
+                        str(page['group_id']),
+                        str(page['name']),
+                        str(page['title'])))
                 else:
                     link = h.literal('<a href="/pages/%s">%s</a>' % (
                         str(page['name']), str(page['title'])))
@@ -98,7 +106,10 @@ def build_pages_nav_main(*args):
     output = h.build_nav_main(*new_args)
 
     # do not display any private datasets in menu even for sysadmins
-    pages_list = p.toolkit.get_action('ckanext_pages_list')(None, {'order': True, 'private': False})
+    pages_list = p.toolkit.get_action('ckanext_pages_list')(None, {
+        'order': True,
+        'private': False,
+        'show_all_pages': True})
 
     page_name = ''
 
@@ -110,9 +121,18 @@ def build_pages_nav_main(*args):
         if page['display_link_on'] in ['header_and_footer', 'header']:
             if not page['external_link']:
                 if page['page_type'] == 'blog':
-                    link = h.literal('<a href="/blog/%s">%s</a>' % (str(page['name']), str(page['title'])))
+                    link = h.literal('<a href="/blog/%s">%s</a>' % (
+                        str(page['name']), str(page['title'])))
+                elif page['group_id']:
+                    org_or_group = page['group_type']
+                    link = h.literal('<a href="/%s/pages/%s/%s">%s</a>' % (
+                        org_or_group,
+                        str(page['group_id']),
+                        str(page['name']),
+                        str(page['title'])))
                 else:
-                    link = h.literal('<a href="/pages/%s">%s</a>' % (str(page['name']), str(page['title'])))
+                    link = h.literal('<a href="/pages/%s">%s</a>' % (
+                        str(page['name']), str(page['title'])))
 
                 if page['name'] == page_name:
                     li = h.literal('<li class="active">') + link + h.literal('</li>')
@@ -121,9 +141,11 @@ def build_pages_nav_main(*args):
             else:
                 ex_link = page['content'].replace('<p>', '').replace('</p>', '')
                 if page['page_type'] == 'blog':
-                    link = h.literal('<a href="%s" target=_blank>%s</a>' % (str(ex_link), str(page['title'])))
+                    link = h.literal('<a href="%s" target=_blank>%s</a>' % (
+                        str(ex_link), str(page['title'])))
                 else:
-                    link = h.literal('<a href="%s" target=_blank>%s</a>' % (str(ex_link), str(page['title'])))
+                    link = h.literal('<a href="%s" target=_blank>%s</a>' % (
+                        str(ex_link), str(page['title'])))
 
                 if page['name'] == page_name:
                     li = h.literal('<li class="active">') + link + h.literal('</li>')
@@ -183,7 +205,8 @@ class PagesPlugin(PagesPluginBase):
     p.implements(p.IAuthFunctions, inherit=True)
 
     def update_config(self, config):
-        self.organization_pages = p.toolkit.asbool(config.get('ckanext.pages.organization', False))
+        self.organization_pages = p.toolkit.asbool(config.get(
+            'ckanext.pages.organization', False))
         self.group_pages = p.toolkit.asbool(config.get('ckanext.pages.group', False))
 
         p.toolkit.add_template_directory(config, 'theme/templates_main')
@@ -221,9 +244,14 @@ class PagesPlugin(PagesPluginBase):
             map.connect('organization_pages_edit', '/organization/pages_edit/{id}{page:/.*|}',
                         action='org_edit', ckan_icon='edit', controller=controller)
             map.connect('organization_pages_index', '/organization/pages/{id}',
-                        action='org_show', ckan_icon='file', controller=controller, highlight_actions='org_edit org_show', page='')
-            map.connect('organization_pages', '/organization/pages/{id}{page:/.*|}',
-                        action='org_show', ckan_icon='file', controller=controller, highlight_actions='org_edit org_show')
+                        action='org_show', ckan_icon='file',
+                        controller=controller,
+                        highlight_actions='org_edit org_show', page='')
+            map.connect('organization_pages',
+                        '/organization/pages/{id}{page:/.*|}',
+                        action='org_show', ckan_icon='file',
+                        controller=controller,
+                        highlight_actions='org_edit org_show')
 
         if self.group_pages:
             map.connect('group_pages_delete', '/group/pages_delete/{id}/{page}',
@@ -231,18 +259,26 @@ class PagesPlugin(PagesPluginBase):
             map.connect('group_pages_edit', '/group/pages_edit/{id}{page:/.*|}',
                         action='group_edit', ckan_icon='edit', controller=controller)
             map.connect('group_pages_index', '/group/pages/{id}',
-                        action='group_show', ckan_icon='file', controller=controller, highlight_actions='group_edit group_show', page='')
+                        action='group_show', ckan_icon='file',
+                        controller=controller,
+                        highlight_actions='group_edit group_show', page='')
             map.connect('group_pages', '/group/pages/{id}{page:/.*|}',
-                        action='group_show', ckan_icon='file', controller=controller, highlight_actions='group_edit group_show')
+                        action='group_show', ckan_icon='file',
+                        controller=controller,
+                        highlight_actions='group_edit group_show')
 
         map.connect('pages_delete', '/pages_delete{page:/.*|}',
                     action='pages_delete', ckan_icon='delete', controller=controller)
         map.connect('pages_edit', '/pages_edit{page:/.*|}',
                     action='pages_edit', ckan_icon='edit', controller=controller)
         map.connect('pages_index', '/pages',
-                    action='pages_index', ckan_icon='file', controller=controller, highlight_actions='pages_edit pages_index pages_show')
+                    action='pages_index', ckan_icon='file',
+                    controller=controller,
+                    highlight_actions='pages_edit pages_index pages_show')
         map.connect('pages_show', '/pages{page:/.*|}',
-                    action='pages_show', ckan_icon='file', controller=controller, highlight_actions='pages_edit pages_index pages_show')
+                    action='pages_show', ckan_icon='file',
+                    controller=controller,
+                    highlight_actions='pages_edit pages_index pages_show')
         map.connect('pages_upload', '/pages_upload',
                     action='pages_upload', controller=controller)
 
@@ -251,9 +287,13 @@ class PagesPlugin(PagesPluginBase):
         map.connect('blog_edit', '/blog_edit{page:/.*|}',
                     action='blog_edit', ckan_icon='edit', controller=controller)
         map.connect('blog_index', '/blog',
-                    action='blog_index', ckan_icon='file', controller=controller, highlight_actions='blog_edit blog_index blog_show')
+                    action='blog_index', ckan_icon='file',
+                    controller=controller,
+                    highlight_actions='blog_edit blog_index blog_show')
         map.connect('blog_show', '/blog{page:/.*|}',
-                    action='blog_show', ckan_icon='file', controller=controller, highlight_actions='blog_edit blog_index blog_show')
+                    action='blog_show', ckan_icon='file',
+                    controller=controller,
+                    highlight_actions='blog_edit blog_index blog_show')
         return map
 
     def get_actions(self):
