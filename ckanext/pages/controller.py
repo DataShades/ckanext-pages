@@ -1,6 +1,7 @@
 import ckan.plugins as p
 import ckan.lib.helpers as helpers
 from pylons import config
+from ckan.common import c
 
 _ = p.toolkit._
 
@@ -85,15 +86,24 @@ class PagesController(p.toolkit.BaseController):
 
         if p.toolkit.request.method == 'POST' and not data:
             data = p.toolkit.request.POST
-            items = ['title', 'name', 'content', 'private', 'publish_date']
+            items = [
+                'title',
+                'name',
+                'content',
+                'private',
+                'publish_date',
+                'external_link',
+                'order',
+                'display_link_on']
             # update config from form
             for item in items:
                 if item in data:
                     _page[item] = data[item]
-            _page['org_id'] = p.toolkit.c.group_dict['id'],
+            _page['org_id'] = c.group_dict['id'],
             _page['page'] = page
+            _page['group_type'] = 'organization'
             try:
-                junk = p.toolkit.get_action('ckanext_pages_update')(
+                junk = p.toolkit.get_action('ckanext_org_pages_update')(
                     data_dict=_page
                 )
             except p.toolkit.ValidationError, e:
@@ -165,15 +175,24 @@ class PagesController(p.toolkit.BaseController):
 
         if p.toolkit.request.method == 'POST' and not data:
             data = p.toolkit.request.POST
-            items = ['title', 'name', 'content', 'private', 'publish_date']
+            items = [
+                'title',
+                'name',
+                'content',
+                'private',
+                'publish_date',
+                'external_link',
+                'order',
+                'display_link_on']
             # update config from form
             for item in items:
                 if item in data:
                     _page[item] = data[item]
-            _page['org_id'] = p.toolkit.c.group_dict['id']
+            _page['org_id'] = c.group_dict['id']
             _page['page'] = page
+            _page['group_type'] = 'group'
             try:
-                junk = p.toolkit.get_action('ckanext_pages_update')(
+                junk = p.toolkit.get_action('ckanext_group_pages_update')(
                     data_dict=_page
                 )
             except p.toolkit.ValidationError, e:

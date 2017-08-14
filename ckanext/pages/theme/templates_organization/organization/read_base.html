@@ -2,5 +2,7 @@
 
 {% block content_primary_nav %}
   {{ super() }}
-  {{ h.build_nav_icon('organization_pages_index', _('Pages'), id=c.group_dict.name) }}
+  {% if c.userobj.sysadmin or h.user_in_org_or_group(c.group_dict.id) %}
+    {{ h.build_nav_icon('organization_pages_index', _('Pages'), id=c.group_dict.name) }}
+  {% endif %}
 {% endblock %}
