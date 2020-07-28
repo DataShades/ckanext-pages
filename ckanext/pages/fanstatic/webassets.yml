@@ -1,0 +1,16 @@
+pages-css:
+  filter: cssrewrite
+  output: ckanext-pages/%(version)s-pages-css.css
+  contents:
+    - css/medium-editor.css
+    - css/bootstrap.css
+
+pages-js:
+  filter: rjsmin
+  extra:
+    preload:
+      - base/main
+  output: ckanext-pages/%(version)s-pages-js.js
+  contents:
+    - js/medium-editor.js
+    - js/pages-editor.js

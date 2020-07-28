@@ -1,14 +1,15 @@
-import cgi
+from __future__ import absolute_import
+import html
 import logging
+from six.moves.urllib.parse import quote
 import urllib
-from pylons import config
-import ckan.plugins.toolkit as toolkit
+import ckantoolkit as toolkit
 ignore_missing = toolkit.get_validator('ignore_missing')
 
 import ckan.plugins as p
 import ckan.lib.helpers as h
-import actions
-import auth
+from . import actions
+from . import auth
 
 if toolkit.check_ckan_version(min_version='2.5'):
     from ckan.lib.plugins import DefaultTranslation
@@ -19,7 +20,18 @@ else:
     class PagesPluginBase(p.SingletonPlugin):
         pass
 
+if p.toolkit.check_ckan_version(min_version="2.9"):
+    from ckanext.pages.compat.flask_plugin import (
+        PagesMixin
+    )
+else:
+    from ckanext.pages.compat.pylons_plugin import (
+        PagesMixin
+    )
+
+
 log = logging.getLogger(__name__)
+config = toolkit.config
 
 
 def build_pages_nav_main(*args):
@@ -50,14 +62,16 @@ def build_pages_nav_main(*args):
 
     page_name = ''
 
-    if (hasattr(toolkit.c, 'action') and toolkit.c.action in ('pages_show', 'blog_show')
-       and toolkit.c.controller == 'ckanext.pages.controller:PagesController'):
+    if toolkit.get_endpoint in [
+            ('pages', 'show'),
+            ('blog', 'show')
+    ]:
         page_name = toolkit.c.environ['routes.url'].current().split('/')[-1]
 
     for page in pages_list:
         type_ = 'blog' if page['page_type'] == 'blog' else 'pages'
-        name = urllib.quote(page['name'].encode('utf-8')).decode('utf-8')
-        title = cgi.escape(page['title'])
+        name = quote(page['name'].encode('utf-8'))
+        title = html.escape(page['title'])
         link = h.literal(u'<a href="/{}/{}">{}</a>'.format(type_, name, title))
         if page['name'] == page_name:
             li = h.literal('<li class="active">') + link + h.literal('</li>')
@@ -103,11 +117,10 @@ def get_plus_icon():
     return 'plus-sign-alt'
 
 
-class PagesPlugin(PagesPluginBase):
+class PagesPlugin(PagesMixin, PagesPluginBase):
     p.implements(p.IConfigurer, inherit=True)
     p.implements(p.ITemplateHelpers, inherit=True)
     p.implements(p.IConfigurable, inherit=True)
-    p.implements(p.IRoutes, inherit=True)
     p.implements(p.IActions, inherit=True)
     p.implements(p.IAuthFunctions, inherit=True)
 
@@ -140,52 +153,6 @@ class PagesPlugin(PagesPluginBase):
             'get_recent_blog_posts': get_recent_blog_posts,
             'pages_get_plus_icon': get_plus_icon
         }
-
-    def after_map(self, map):
-        controller = 'ckanext.pages.controller:PagesController'
-
-        if self.organization_pages:
-            map.connect('organization_pages_delete', '/organization/pages_delete/{id}{page:/.*|}',
-                        action='org_delete', ckan_icon='delete', controller=controller)
-            map.connect('organization_pages_edit', '/organization/pages_edit/{id}{page:/.*|}',
-                        action='org_edit', ckan_icon='edit', controller=controller)
-            map.connect('organization_pages_index', '/organization/pages/{id}',
-                        action='org_show', ckan_icon='file', controller=controller, highlight_actions='org_edit org_show', page='')
-            map.connect('organization_pages', '/organization/pages/{id}{page:/.*|}',
-                        action='org_show', ckan_icon='file', controller=controller, highlight_actions='org_edit org_show')
-
-        if self.group_pages:
-            map.connect('group_pages_delete', '/group/pages_delete/{id}{page:/.*|}',
-                        action='group_delete', ckan_icon='delete', controller=controller)
-            map.connect('group_pages_edit', '/group/pages_edit/{id}{page:/.*|}',
-                        action='group_edit', ckan_icon='edit', controller=controller)
-            map.connect('group_pages_index', '/group/pages/{id}',
-                        action='group_show', ckan_icon='file', controller=controller, highlight_actions='group_edit group_show', page='')
-            map.connect('group_pages', '/group/pages/{id}{page:/.*|}',
-                        action='group_show', ckan_icon='file', controller=controller, highlight_actions='group_edit group_show')
-
-
-        map.connect('pages_delete', '/pages_delete{page:/.*|}',
-                    action='pages_delete', ckan_icon='delete', controller=controller)
-        map.connect('pages_edit', '/pages_edit{page:/.*|}',
-                    action='pages_edit', ckan_icon='edit', controller=controller)
-        map.connect('pages_index', '/pages',
-                    action='pages_index', ckan_icon='file', controller=controller, highlight_actions='pages_edit pages_index pages_show')
-        map.connect('pages_show', '/pages{page:/.*|}',
-                    action='pages_show', ckan_icon='file', controller=controller, highlight_actions='pages_edit pages_index pages_show')
-        map.connect('pages_upload', '/pages_upload',
-                    action='pages_upload', controller=controller)
-
-        map.connect('blog_delete', '/blog_delete{page:/.*|}',
-                    action='blog_delete', ckan_icon='delete', controller=controller)
-        map.connect('blog_edit', '/blog_edit{page:/.*|}',
-                    action='blog_edit', ckan_icon='edit', controller=controller)
-        map.connect('blog_index', '/blog',
-                    action='blog_index', ckan_icon='file', controller=controller, highlight_actions='blog_edit blog_index blog_show')
-        map.connect('blog_show', '/blog{page:/.*|}',
-                    action='blog_show', ckan_icon='file', controller=controller, highlight_actions='blog_edit blog_index blog_show')
-        return map
-
 
     def get_actions(self):
         actions_dict = {

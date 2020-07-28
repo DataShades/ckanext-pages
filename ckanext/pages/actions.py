@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime
 import json
 
@@ -6,17 +7,20 @@ import ckan.plugins as p
 import ckan.lib.navl.dictization_functions as df
 import ckan.lib.uploader as uploader
 import ckan.lib.helpers as h
-from ckan.plugins import toolkit as tk
-from HTMLParser import HTMLParser
+import ckantoolkit as tk
 from ckanext.pages.logic.schema import update_pages_schema
 
+try:
+    from HTMLParser import HTMLParser
+except ImportError:
+    from html.parser import HTMLParser
 try:
     import ckan.authz as authz
 except ImportError:
     import ckan.new_authz as authz
 
 
-import db
+from . import db
 
 
 class HTMLFirstImage(HTMLParser):

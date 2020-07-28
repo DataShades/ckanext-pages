@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import ckan.plugins as p
 import ckan.lib.navl.dictization_functions as df
-import db
+from . import db
 
 def page_name_validator(key, data, errors, context):
     session = context['session']

@@ -14,7 +14,7 @@ Page = None
 
 
 def make_uuid():
-    return unicode(uuid.uuid4())
+    return str(uuid.uuid4())
 
 
 def init_db(model):
@@ -150,7 +150,7 @@ def table_dictize(obj, context, **kw):
         elif isinstance(value, list):
             result_dict[name] = value
         else:
-            result_dict[name] = unicode(value)
+            result_dict[name] = str(value)
 
     result_dict.update(kw)
 

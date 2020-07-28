@@ -1,0 +1,11 @@
+textbox-js:
+  filter: rjsjmin
+  output: ckanext-pages/%(version)s-textbox-js.js
+  extra:
+    preload:
+      - base/main
+      # - ckanext-pages/ckeditor
+  contents:
+    - vendor/ckeditor/ckeditor.js
+    - vendor/ckeditor/adapters/jquery.js
+    - ckedit.js

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import ckan.plugins as p
 
 try:
@@ -5,7 +6,7 @@ try:
 except ImportError:
     import ckan.new_authz as authz
 
-import db
+from . import db
 
 
 def sysadmin(context, data_dict):

@@ -1,0 +1,32 @@
+pages-styles:
+  filter: cssrewrite
+  output: ckanext-pages/%(version)s-pages-styles.css
+  contents:
+    - styles/pages.css
+
+pages-main-js:
+  filter: rjsjmin
+  output: ckanext-pages/%(version)s-pages-main-js.js
+  extra:
+    preload:
+      - base/main
+  contents:
+    - vendor/ckeditor/ckeditor.js
+    - vendor/ckeditor/adapters/jquery.js
+    - vendor/datepicker/js/bootstrap-datepicker.js
+    - ckedit.js
+    - datepicker.js
+
+pages-main-css:
+  filter: cssrewrite
+  output: ckanext-pages/%(version)s-pages-main-css.css
+  contents:
+    - vendor/datepicker/css/datepicker.css
+    - ckedit.css
+
+
+pages-blog-css:
+  filter: cssrewrite
+  output: ckanext-pages/%(version)s-pages-blog-css.css
+  contents:
+    - blog.css

@@ -20,11 +20,11 @@
 
     {% for page in pages %}
       {% if id %} {# this is for orgs and groups #}
-        {% set url = h.url_for(controller='ckanext.pages.controller:PagesController', action=action, id=id, page='/' + page.name) %}
+        {% set url = h.url_for('pages_group.' ~ action, id=id, page='/' + page.name) %}
       {% elif type == 'blog' %}
-        {% set url = h.url_for(controller='ckanext.pages.controller:PagesController', action='blog_show', page='/' + page.name) %}
+        {% set url = h.url_for('blog.show', page='/' + page.name) %}
       {% else %}
-        {% set url = h.url_for(controller='ckanext.pages.controller:PagesController', action='pages_show', page='/' + page.name) %}
+        {% set url = h.url_for('pages.show', page='/' + page.name) %}
       {% endif %}
       <div class="row page-list-item dataset-item">
       {% if page.image %}

@@ -1,6 +1,6 @@
 {% ckan_extends %}
 
 {% block content_primary_nav %}
-  {{ super() }}
-  {{ h.build_nav_icon('group_pages_index', _('Pages'), id=c.group_dict.name) }}
+    {{ super() }}
+    {{ h.build_nav_icon('pages_group.show', _('Pages'), id=c.group_dict.name) }}
 {% endblock %}
