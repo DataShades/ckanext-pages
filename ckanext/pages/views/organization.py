@@ -39,7 +39,7 @@ def _template_setup_org(id):
 )
 def delete(id, page=''):
     _template_setup_org(id)
-    page = page[1:]
+    page = page.lstrip('/')
     if "cancel" in tk.request.params:
         return tk.redirect_to(
             "pages_organization.edit",
@@ -73,7 +73,7 @@ def delete(id, page=''):
 def edit(id, page=None, data=None, errors=None, error_summary=None):
     _template_setup_org(id)
     if page:
-        page = page[1:]
+        page = page.lstrip('/')
     _page = tk.get_action("ckanext_pages_show")(
         data_dict={"org_id": tk.c.group_dict["id"], "page": page}
     )
@@ -126,7 +126,7 @@ def edit(id, page=None, data=None, errors=None, error_summary=None):
 @organization.route("/organization/pages/<id>/<path:page>")
 def show(id, page=None):
     if page:
-        page = page[1:]
+        page = page.lstrip('/')
     _template_setup_org(id)
 
     context = {"for_view": True}

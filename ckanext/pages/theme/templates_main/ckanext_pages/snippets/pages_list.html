@@ -12,19 +12,23 @@
 {% if type == 'blog' %}
   <h2>Blog</h2>
 {% else %}
- <h2>Pages</h2>
+  <h2>Pages</h2>
 {% endif %}
 
 {% if pages %}
-  {% set editor = h.get_wysiwyg_editor() %}
+    {% set editor = h.get_wysiwyg_editor() %}
 
     {% for page in pages %}
-      {% if id %} {# this is for orgs and groups #}
-        {% set url = h.url_for('pages_group.' ~ action, id=id, page='/' + page.name) %}
-      {% elif type == 'blog' %}
-        {% set url = h.url_for('blog.show', page='/' + page.name) %}
+        {% if id %} {# this is for orgs and groups #}
+            {% if h.ckan_version() < '2.9' %}
+                {% set url = h.url_for('pages_group.' ~ action, id=id, page=page.name) %}
+            {% else %}
+                {% set url = h.url_for('pages_' ~ c.group_dict.type ~ '.show', id=id, page=page.name) %}
+            {% endif %}
+        {% elif type == 'blog' %}
+        {% set url = h.url_for('blog.show', page=page.name) %}
       {% else %}
-        {% set url = h.url_for('pages.show', page='/' + page.name) %}
+        {% set url = h.url_for('pages.show', page=page.name) %}
       {% endif %}
       <div class="row page-list-item dataset-item">
       {% if page.image %}

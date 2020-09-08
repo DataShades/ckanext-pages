@@ -34,7 +34,7 @@ def _template_setup_group(id):
 @group.route("/group/pages_delete/<id>/<path:page>", methods=["POST", "GET"])
 def delete(id, page=''):
     _template_setup_group(id)
-    page = page[1:]
+    page = page.lstrip('/')
     if "cancel" in tk.request.params:
         return tk.redirect_to(
             "pages_group.edit", id=tk.c.group_dict["name"], page="/" + page
@@ -65,7 +65,7 @@ def delete(id, page=''):
 def edit(id, page=None, data=None, errors=None, error_summary=None):
     _template_setup_group(id)
     if page:
-        page = page[1:]
+        page = page.lstrip('/')
     _page = tk.get_action("ckanext_pages_show")(
         data_dict={"org_id": tk.c.group_dict["id"], "page": page}
     )
@@ -116,7 +116,7 @@ def edit(id, page=None, data=None, errors=None, error_summary=None):
 @group.route("/group/pages/<id>/<path:page>")
 def show(id, page=None):
     if page:
-        page = page[1:]
+        page = page.lstrip('/')
     _template_setup_group(id)
 
     context = {"for_view": True}

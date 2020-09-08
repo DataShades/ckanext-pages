@@ -1,3 +1,4 @@
+import six
 from flask import Blueprint
 import ckan.plugins as p
 import ckan.lib.helpers as helpers
@@ -85,7 +86,7 @@ def _inject_views_into_page(_page):
         view_element = lxml.html.fromstring(resource_view_html)
         element.append(view_element)
 
-    new_content = lxml.html.tostring(root)
+    new_content = six.ensure_str(lxml.html.tostring(root))
     if new_content.startswith("<div>") and new_content.endswith("</div>"):
         # lxml will add a <div> tag to text that starts with an HTML tag,
         # which will cause the rendering to fail
@@ -119,7 +120,8 @@ def _pages_list_pages(page_type):
 @pages.route("/pages_delete/", methods=["POST", "GET"])
 @pages.route("/pages_delete/<path:page>", methods=["POST", "GET"])
 def delete(page=None, page_type="pages"):
-    page = page[1:]
+    if page:
+        page = page.lstrip('/')
     if "cancel" in p.toolkit.request.params:
         return p.toolkit.redirect_to("%s.edit" % page_type, page="/" + page)
 
@@ -144,7 +146,7 @@ def edit(
     page='', data=None, errors=None, error_summary=None, page_type="pages"
 ):
     if page:
-        page = page[1:]
+        page = page.lstrip('/')
     _page = p.toolkit.get_action("ckanext_pages_show")(
         data_dict={"org_id": None, "page": page,}
     )
@@ -168,10 +170,10 @@ def edit(
             errors = e.error_dict
             error_summary = e.error_summary
             return edit(
-                "/" + page, data, errors, error_summary, page_type=page_type
+                page, data, errors, error_summary, page_type=page_type
             )
         return p.toolkit.redirect_to(
-            "%s.show" % page_type, page="/" + _page["name"]
+            "%s.show" % page_type, page=_page["name"]
         )
 
     try:
@@ -191,7 +193,6 @@ def edit(
     form_snippet = config.get(
         "ckanext.pages.form", "ckanext_pages/base_form.html"
     )
-
     vars = {
         "data": data,
         "errors": errors,
@@ -212,7 +213,7 @@ def show(page=None, page_type="page"):
         return _pages_list_pages("page")
     p.toolkit.c.page_type = page_type
     if page:
-        page = page[1:]
+        page = page.lstrip('/')
     if not page:
         return _pages_list_pages(page_type)
     _page = p.toolkit.get_action("ckanext_pages_show")(

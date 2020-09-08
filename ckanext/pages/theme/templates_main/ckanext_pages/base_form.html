@@ -18,7 +18,7 @@
     {% set args = {} %}
 {% endif %}
 
-{% set page_url = '/' + page if page else '' %}
+{% set page_url = page if page else '' %}
 {% set action_url = h.url_for(prefix + 'edit', page=page_url, **args) %}
 {% set cancel_url = h.url_for(prefix + 'show', **args) %}
 {% set slug_prefix = cancel_url %}
